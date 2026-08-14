@@ -164,8 +164,8 @@
     <div class="fcg-player">
       <div class="fcg-player-header">
         <div class="fcg-header-left">
-          <select id="fcg-category" class="fcg-select" aria-label="Category filter">
-            <option value="ALL">All Categories</option>
+          <select id="fcg-category" class="fcg-select" aria-label="CEFR level filter">
+            <option value="ALL">All Levels</option>
           </select>
           <label class="fcg-check"><input type="checkbox" id="fcg-hide-mastered"> Hide Mastered</label>
         </div>
@@ -273,6 +273,22 @@
     if (de) u.voice = de;
     speechSynthesis.speak(u);
   }
+
+  function playFlipSound() {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    const context = new AudioContext();
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    oscillator.frequency.setValueAtTime(720, context.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(420, context.currentTime + 0.08);
+    gain.gain.setValueAtTime(0.08, context.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.08);
+    oscillator.connect(gain).connect(context.destination);
+    oscillator.start();
+    oscillator.stop(context.currentTime + 0.08);
+    oscillator.onended = () => context.close();
+  }
   if ("speechSynthesis" in window) speechSynthesis.getVoices();
 
   function updateStats() {
@@ -292,7 +308,7 @@
   function populateCategories() {
     const sel = $("fcg-category");
     const levels = [...new Set(allCards.map(c => c.level).filter(Boolean))].sort();
-    sel.innerHTML = '<option value="ALL">All Categories</option>';
+    sel.innerHTML = '<option value="ALL">All Levels</option>';
     levels.forEach(l => {
       const o = document.createElement("option");
       o.value = l; o.textContent = l; sel.appendChild(o);
@@ -346,7 +362,10 @@
     if (!filtered.length) return;
     flipped = !flipped;
     renderCard();
-    if (flipped && speak !== false) speakGerman(filtered[current].german_sentence || filtered[current].german_word);
+    if (flipped) {
+      playFlipSound();
+      if (speak !== false) speakGerman(filtered[current].german_sentence || filtered[current].german_word);
+    }
   }
 
   function renderTable(items) {

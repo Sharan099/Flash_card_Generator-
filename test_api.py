@@ -4,6 +4,7 @@ import json
 import os
 import sqlite3
 import tempfile
+from pathlib import Path
 
 from fastapi.testclient import TestClient
 
@@ -126,6 +127,13 @@ def test_format_helpers():
     assert "**Abteilung**" in cards[0]["german_sentence"]
 
 
+def test_study_widget_features():
+    widget = Path("static/study_widget.html").read_text(encoding="utf-8")
+    assert 'aria-label="CEFR level filter"' in widget
+    assert "function playFlipSound()" in widget
+    assert "speakGerman(filtered[current].german_sentence" in widget
+
+
 if __name__ == "__main__":
     test_empty_state()
     test_delete_removes_cards()
@@ -133,4 +141,5 @@ if __name__ == "__main__":
     test_review_and_due_filter()
     test_doc_filter()
     test_format_helpers()
+    test_study_widget_features()
     print("All tests passed.")
