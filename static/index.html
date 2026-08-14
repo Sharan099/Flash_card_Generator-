@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flashcard — B1 Wortschatz Trainer</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap');
+
+    :root {
+      --bg-color: #faf6ed;
+      --text-color: #1a1a1a;
+      --accent-color: #00e588; /* Glowing green for highlights */
+      --yellow-accent: #f2c94c; /* Gold/yellow for active toggles */
+      --border-color: #1a1a1a;
+      --card-pink: #f472b6; /* Vibrant pink for front face */
+      --card-pink-hover: #ec4899;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: 'Outfit', sans-serif;
+      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 1050px;
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+
+    /* Top Header Bar */
+    .top-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 2px solid var(--border-color);
+      border-radius: 16px;
+      padding: 15px 25px;
+      background-color: #ffffff;
+      box-shadow: 4px 4px 0px 0px var(--border-color);
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      background-color: var(--yellow-accent);
+      border: 2px solid var(--border-color);
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.1rem;
+      box-shadow: 2px 2px 0px 0px var(--border-color);
+    }
+
+    .logo-text {
+      font-weight: 800;
+      font-size: 1.4rem;
+      letter-spacing: -0.02em;
+    }
+
+    .mode-toggles {
+      display: flex;
+      gap: 10px;
+    }
+
+    .mode-btn {
+      background-color: transparent;
+      color: var(--text-color);
+      border: 2px solid var(--border-color);
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 0.9rem;
+      padding: 8px 18px;
+      border-radius: 50px;
+      cursor: pointer;
+      outline: none;
+      box-shadow: 2px 2px 0px 0px var(--border-color);
+      transition: all 0.1s ease-out;
+    }
+
+    .mode-btn:hover {
+      transform: translate(-1px, -1px);
+      box-shadow: 3px 3px 0px 0px var(--border-color);
+    }
+
+    .mode-btn.active {
+      background-color: var(--yellow-accent);
+      transform: none;
+      box-shadow: 2px 2px 0px 0px var(--border-color);
+    }
+
+    /* Main Grid Layout */
+    .main-layout {
+      display: flex;
+      gap: 30px;
+      align-items: flex-start;
+    }
+
+    /* Left Column: Player */
+    .player-column {
+      flex: 1.5;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .player-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #ffffff;
+      border: 2px solid var(--border-color);
+      border-radius: 14px;
+      padding: 12px 20px;
+      box-shadow: 4px 4px 0px 0px var(--border-color);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .brutal-select {
+      background-color: #ffffff;
+      color: var(--text-color);
+      border: 2px solid var(--border-color);
+      border-radius: 50px;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 0.85rem;
+      padding: 6px 30px 6px 15px;
+      cursor: pointer;
+      outline: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml;utf8,<svg fill='%231a1a1a' height='12' viewBox='0 0 24 24' width='12' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+      background-repeat: no-repeat;
+      background-position: calc(100% - 10px) center;
+    }
+
+    .checkbox-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .checkbox-container input {
+      display: none;
+    }
+
+    .checkbox-custom {
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--border-color);
+      border-radius: 4px;
+      background-color: #ffffff;
+      position: relative;
+      display: inline-block;
+    }
+
+    .checkbox-container input:checked + .checkbox-custom {
+      background-color: var(--yellow-accent);
+    }
+
+    .checkbox-container input:checked + .checkbox-custom::after {
+      content: "✓";
+      position: absolute;
+      top: -3px;
+      left: 2px;
+      font-weight: 800;
+      font-size: 0.85rem;
+      color: var(--text-color);
+    }
+
+    .brutal-btn {
+      background-color: #ffffff;
+      color: var(--text-color);
+      border: 2px solid var(--border-color);
+      padding: 10px 22px;
+      font-weight: 800;
+      font-family: inherit;
+      font-size: 0.95rem;
+      cursor: pointer;
+      border-radius: 50px;
+      box-shadow: 3px 3px 0px 0px var(--border-color);
+      transition: all 0.1s ease-out;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      outline: none;
+      user-select: none;
+    }
+
+    .brutal-btn:hover {
+      transform: translate(-1px, -1px);
+      box-shadow: 4px 4px 0px 0px var(--border-color);
+    }
+
+    .brutal-btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: 1px 1px 0px 0px var(--border-color);
+    }
+
+    .brutal-btn.pill {
+      padding: 6px 15px;
+      font-size: 0.85rem;
+    }
+
+    .brutal-btn.yellow-btn {
+      background-color: var(--yellow-accent);
+    }
+
+    .brutal-btn.white-btn {
+      background-color: #ffffff;
+    }
+
+    /* Pink Card Face Container */
+    .pink-grid-card {
+      background-color: var(--card-pink);
+      border: 2px solid var(--border-color);
+      border-radius: 20px;
+      box-shadow: 6px 6px 0px 0px var(--border-color);
+      position: relative;
+      min-height: 380px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 35px;
+      cursor: pointer;
+      overflow: hidden;
+      user-select: none;
+      transition: transform 0.15s, box-shadow 0.15s, background-color 0.15s;
+    }
+
+    .pink-grid-card:hover {
+      background-color: var(--card-pink-hover);
+      transform: translate(-2px, -2px);
+      box-shadow: 8px 8px 0px 0px var(--border-color);
+    }
+
+    .pink-grid-card:active {
+      transform: translate(2px, 2px);
+      box-shadow: 4px 4px 0px 0px var(--border-color);
+    }
+
+    .grid-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: linear-gradient(to right, rgba(255, 255, 255, 0.12) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+      background-size: 24px 24px;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .card-face-content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100%;
+      flex-grow: 1;
+      width: 100%;
+    }
+
+    .category-badge {
+      background-color: #ffffff;
+      border: 2px solid var(--border-color);
+      border-radius: 50px;
+      padding: 4px 15px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      width: fit-content;
+      margin: 0 auto 20px auto;
+      box-shadow: 2px 2px 0px 0px var(--border-color);
+    }
+
+    .card-text-container {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+      text-align: center;
+      padding: 10px 0;
+    }
+
+    .card-prompt {
+      font-size: 1.9rem;
+      font-weight: 800;
+      line-height: 1.35;
+      color: var(--text-color);
+      max-width: 600px;
+    }
+
+    .reveal-hint {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(26, 26, 26, 0.65);
+      margin-top: 10px;
+    }
+
+    /* Revealed View Inside Card */
+    .answer-view {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      width: 100%;
+    }
+
+    .german-sent-text {
+      font-size: 1.9rem;
+      font-weight: 800;
+      line-height: 1.35;
+      color: var(--text-color);
+      max-width: 600px;
+    }
+
+    .gloss-text {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #333333;
+      margin-top: 20px;
+      padding-top: 15px;
+      border-top: 2px dashed rgba(26, 26, 26, 0.2);
+      width: 80%;
+      max-width: 450px;
+      text-transform: capitalize;
+    }
+
+    /* Card Progress Section */
+    .card-progress-footer {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-top: 25px;
+      width: 100%;
+    }
+
+    .progress-bar-bg {
+      flex-grow: 1;
+      height: 12px;
+      background-color: #ffffff;
+      border: 2px solid var(--border-color);
+      border-radius: 50px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background-color: var(--text-color);
+      border-radius: 50px;
+      width: 0%;
+      transition: width 0.2s ease-out;
+    }
+
+    .card-progress-footer span {
+      font-weight: 800;
+      font-size: 0.85rem;
+      white-space: nowrap;
+    }
+
+    /* Player Actions */
+    .player-actions {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 5px;
+    }
+
+    .player-actions button {
+      flex: 1;
+      justify-content: center;
+      padding: 14px;
+      font-size: 1.05rem;
+    }
+
+    /* Player Footer Controls */
+    .player-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #ffffff;
+      border: 2px solid var(--border-color);
+      border-radius: 14px;
+      padding: 10px 20px;
+      box-shadow: 4px 4px 0px 0px var(--border-color);
+    }
+
+    .nav-btn {
+      padding: 8px 18px;
+      font-size: 0.85rem;
+    }
+
+    .nav-counter {
+      font-weight: 800;
+      font-size: 0.9rem;
+      color: var(--text-color);
+    }
+
+    /* Tooltip styles for hover articles */
+    .tooltip {
+      position: relative;
+      text-decoration: underline dashed var(--border-color);
+      cursor: help;
+      display: inline-block;
+    }
+
+    .tooltip::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 125%;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #1a1a1a;
+      color: var(--accent-color);
+      padding: 6px 10px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      border-radius: 6px;
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.15s, visibility 0.15s;
+      z-index: 100;
+      border: 1.5px solid var(--accent-color);
+      box-shadow: 2px 2px 0px 0px var(--border-color);
+    }
+
+    .tooltip:hover::after {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Right Column: Statistics Panel */
+    .stats-column {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 5px;
+      color: rgba(26, 26, 26, 0.7);
+    }
+
+    .stats-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: stretch;
+      border: 2px solid var(--border-color);
+      border-radius: 14px;
+      background-color: #ffffff;
+      box-shadow: 4px 4px 0px 0px var(--border-color);
+      overflow: hidden;
+    }
+
+    .stats-card-left {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 15px 20px;
+    }
+
+    .stats-label {
+      font-size: 0.8rem;
+      color: #666666;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .stats-value {
+      font-size: 2.3rem;
+      font-weight: 800;
+      line-height: 1.1;
+      margin-top: 5px;
+    }
+
+    .stats-card-right {
+      width: 65px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-left: 2px solid var(--border-color);
+    }
+
+    .stats-card-right svg {
+      color: var(--text-color);
+    }
+
+    /* Stat icon backgrounds matching B1 reference */
+    .bg-blue { background-color: #a5c4f7; }
+    .bg-teal { background-color: #4cd3c2; }
+    .bg-pink { background-color: #ff758f; }
+    .bg-magenta { background-color: #f472b6; }
+
+    /* Hidden Utility */
+    .hidden {
+      display: none !important;
+    }
+
+    /* All Cards panel grid and list */
+    .brutal-panel {
+      background-color: #ffffff;
+      padding: 24px;
+      border: 2px solid var(--border-color);
+      border-radius: 16px;
+      box-shadow: 4px 4px 0px 0px var(--border-color);
+    }
+
+    .brutal-input {
+      padding: 8px 12px;
+      font-family: inherit;
+      border: 2px solid var(--border-color);
+      width: 100%;
+      max-width: 320px;
+      outline: none;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+
+    .brutal-input:focus {
+      border-color: var(--yellow-accent);
+    }
+
+    .brutal-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      margin-top: 15px;
+    }
+
+    .brutal-table th {
+      padding: 12px 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      font-size: 0.8rem;
+      letter-spacing: 0.05em;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    .brutal-table td {
+      padding: 12px 10px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      border-bottom: 1px dashed #dddddd;
+    }
+
+    .brutal-table tbody tr:hover td {
+      background-color: #faf8f5;
+    }
+
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-color);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 4px;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 850px) {
+      .main-layout {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .stats-column {
+        margin-top: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- Top Header Bar -->
+    <header class="top-header">
+      <div class="logo-area">
+        <span class="logo-icon">🎴</span>
+        <span class="logo-text">Flashcard</span>
+      </div>
+      <div class="mode-toggles">
+        <button id="study-mode-btn" class="mode-btn active" aria-label="Switch to Study Mode">Study Mode</button>
+        <button id="all-cards-btn" class="mode-btn" aria-label="Switch to All Cards View">All Cards</button>
+      </div>
+    </header>
+
+    <!-- STUDY MODE PANEL -->
+    <div id="study-mode-panel" class="main-layout">
+      
+      <!-- Left Column: Player -->
+      <div class="player-column">
+        
+        <!-- Player Header controls -->
+        <div class="player-header">
+          <div class="header-left">
+            <select id="deck-select" class="brutal-select" aria-label="Select Document Deck">
+              <option value="ALL">All Categories</option>
+            </select>
+            
+            <label class="checkbox-container">
+              <input type="checkbox" id="due-only-chk" checked>
+              <span class="checkbox-custom"></span>
+              Due Only
+            </label>
+            
+            <label class="checkbox-container">
+              <input type="checkbox" id="hide-mastered-chk">
+              <span class="checkbox-custom"></span>
+              Hide Mastered
+            </label>
+          </div>
+          
+          <button id="shuffle-btn" class="brutal-btn pill" aria-label="Shuffle Stack">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
+            Shuffle
+          </button>
+        </div>
+
+        <!-- Pink Card Face -->
+        <div id="flashcard-face" class="pink-grid-card" aria-label="Flashcard Face - Click to flip">
+          <div class="grid-overlay"></div>
+          
+          <div class="card-face-content">
+            <div id="card-level-badge" class="category-badge">Level: B1</div>
+            
+            <!-- Question View (Front) -->
+            <div id="card-question-view" class="card-text-container">
+              <div id="card-prompt-text" class="card-prompt">Loading your flashcards...</div>
+              <div id="card-reveal-prompt" class="reveal-hint">Click to reveal answer</div>
+            </div>
+            
+            <!-- Answer View (Back) -->
+            <div id="card-answer-view" class="answer-view hidden">
+              <div id="card-german-sentence" class="german-sent-text">Ich brauche ein Auto.</div>
+              <div id="card-gloss-text" class="gloss-text">brauchen — to need</div>
+            </div>
+            
+            <div class="card-progress-footer">
+              <div class="progress-bar-bg">
+                <div id="progress-bar-fill" class="progress-bar-fill"></div>
+              </div>
+              <span id="card-progress-ratio">0/0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card Action Buttons -->
+        <div class="player-actions">
+          <button id="know-btn" class="brutal-btn yellow-btn" aria-label="Mark Card as Known">I Know This</button>
+          <button id="reset-card-btn" class="brutal-btn white-btn" aria-label="Reset Card Progress">Reset Progress</button>
+        </div>
+
+        <!-- Card Footer Nav -->
+        <div class="player-footer">
+          <button id="prev-btn" class="brutal-btn nav-btn" aria-label="Go to Previous Card">&lt; Previous</button>
+          <span id="nav-counter" class="nav-counter">Card 0 of 0</span>
+          <button id="next-btn" class="brutal-btn nav-btn" aria-label="Go to Next Card">Next &gt;</button>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Statistics -->
+      <div class="stats-column">
+        <h2 class="section-title">Study Statistics</h2>
+        
+        <!-- Total Cards Card -->
+        <div class="stats-card">
+          <div class="stats-card-left">
+            <span class="stats-label">Total Cards</span>
+            <span id="stat-total" class="stats-value">0</span>
+          </div>
+          <div class="stats-card-right bg-blue">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          </div>
+        </div>
+        
+        <!-- Mastered Card -->
+        <div class="stats-card">
+          <div class="stats-card-left">
+            <span class="stats-label">Mastered</span>
+            <span id="stat-mastered" class="stats-value">0</span>
+          </div>
+          <div class="stats-card-right bg-teal">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.44 2.5 2.5 0 0 1 0-3.12 3 3 0 0 1 0-3.88 2.5 2.5 0 0 1 0-3.12A2.5 2.5 0 0 1 9.5 2zM14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.44 2.5 2.5 0 0 0 0-3.12 3 3 0 0 0 0-3.88 2.5 2.5 0 0 0 0-3.12A2.5 2.5 0 0 0 14.5 2z"/></svg>
+          </div>
+        </div>
+        
+        <!-- In Progress Card -->
+        <div class="stats-card">
+          <div class="stats-card-left">
+            <span class="stats-label">In Progress</span>
+            <span id="stat-progress" class="stats-value">0</span>
+          </div>
+          <div class="stats-card-right bg-pink">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          </div>
+        </div>
+        
+        <!-- Not Started Card -->
+        <div class="stats-card">
+          <div class="stats-card-left">
+            <span class="stats-label">Not Started</span>
+            <span id="stat-unstarted" class="stats-value">0</span>
+          </div>
+          <div class="stats-card-right bg-magenta">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v3M21 8H3M21 8v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8M10 12h4"/></svg>
+          </div>
+        </div>
+
+        <!-- Manage Decks Sidebar Panel -->
+        <h2 class="section-title" style="margin-top: 15px;">Manage Decks</h2>
+        <div class="brutal-panel" style="padding: 15px; display: flex; flex-direction: column; gap: 10px; border-radius: 14px;">
+          <div id="sidebar-decks-list" style="display: flex; flex-direction: column; gap: 8px;">
+            <!-- Populated dynamically -->
+          </div>
+          <button class="brutal-btn yellow-btn" style="width: 100%; padding: 8px; font-size: 0.85rem; justify-content: center; margin-top: 5px;" onclick="document.getElementById('sidebar-file-input').click()">
+            ✚ Upload PDF Deck
+          </button>
+          <input type="file" id="sidebar-file-input" accept=".pdf" style="display: none;">
+          <div id="sidebar-status-msg" style="font-weight: 700; font-size: 0.8rem; text-align: center; margin-top: 5px;" class="hidden"></div>
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- ALL CARDS PANEL -->
+    <div id="all-cards-panel" class="main-layout hidden" style="flex-direction: column; gap: 25px;">
+      
+      <!-- Decks Manager -->
+      <section class="brutal-panel" style="width: 100%;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+          <h3 style="margin: 0; text-transform: uppercase; letter-spacing: 0.05em; font-size: 1.15rem; font-weight: 800;">Deck Manager</h3>
+          <div>
+            <button id="upload-deck-btn" class="brutal-btn yellow-btn" style="padding: 8px 16px; font-size: 0.9rem;" onclick="document.getElementById('file-input').click()">Upload New PDF</button>
+            <input type="file" id="file-input" accept=".pdf" style="display: none;">
+          </div>
+        </div>
+        <div id="status-message" style="margin-bottom: 15px; font-weight: 700; font-size: 0.9rem;" class="hidden"></div>
+        <div id="decks-list" style="display: flex; flex-direction: column; gap: 10px;">
+          <!-- Populated dynamically -->
+        </div>
+      </section>
+      
+      <!-- Vocabulary Explorer -->
+      <section class="brutal-panel" style="width: 100%;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 15px; flex-wrap: wrap;">
+          <h3 style="margin: 0; text-transform: uppercase; letter-spacing: 0.05em; font-size: 1.15rem; font-weight: 800;">Vocabulary Explorer</h3>
+          <input type="text" id="vocab-search" class="brutal-input" placeholder="Search vocabulary...">
+        </div>
+        
+        <div style="overflow-x: auto; max-height: 500px;">
+          <table class="brutal-table">
+            <thead>
+              <tr>
+                <th style="width: 35%;">German Word</th>
+                <th style="width: 35%;">English meaning</th>
+                <th style="width: 15%;">Level</th>
+                <th style="width: 15%;">Box</th>
+              </tr>
+            </thead>
+            <tbody id="vocab-table-body">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+
+  </div>
+
+  <script>
+    // State management
+    let cards = [];
+    let filteredCards = [];
+    let currentIndex = 0;
+    let isFlipped = false; // false = question (front), true = answer (back)
+    
+    let selectedDeck = "ALL";
+    let dueOnly = true;
+    let hideMastered = false;
+    let allExplorerCards = [];
+
+    // Helper to format highlights and article tooltips
+    function getArticleFromWord(germanWord) {
+      // Remove markdown bold tags **
+      let clean = germanWord.replace(/\*\*/g, "").trim();
+      if (clean.startsWith("der ")) return "der";
+      if (clean.startsWith("die ")) return "die";
+      if (clean.startsWith("das ")) return "das";
+      return "";
+    }
+
+    function formatHighlight(text, article = "") {
+      if (!text) return "";
+      let escaped = text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+      
+      if (article) {
+        // Replace target word in double stars with tooltip span
+        return escaped.replace(/\*\*(.*?)\*\*/g, `<span class="tooltip" data-tooltip="Artikel: ${article}">$1</span>`);
+      } else {
+        // Replace target word in double stars with neon green highlighted span
+        return escaped.replace(/\*\*(.*?)\*\*/g, `<span style="color: var(--accent-color); font-weight: 800;">$1</span>`);
+      }
+    }
+
+    // TTS speech synth German sentence
+    function speakGerman(text) {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      // Remove markdown bold tags ** for cleaner synthesis
+      const cleanText = text.replace(/\*\*/g, "");
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      
+      const voices = window.speechSynthesis.getVoices();
+      const deVoice = voices.find(v => v.lang.startsWith("de") || v.lang.includes("DE"));
+      if (deVoice) utterance.voice = deVoice;
+      utterance.lang = "de-DE";
+      window.speechSynthesis.speak(utterance);
+    }
+    
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.getVoices();
+    }
+
+    // View Routing
+    document.getElementById("study-mode-btn").addEventListener("click", () => {
+      document.getElementById("study-mode-btn").classList.add("active");
+      document.getElementById("all-cards-btn").classList.remove("active");
+      
+      document.getElementById("study-mode-panel").classList.remove("hidden");
+      document.getElementById("all-cards-panel").classList.add("hidden");
+      loadNewStack();
+    });
+
+    document.getElementById("all-cards-btn").addEventListener("click", () => {
+      document.getElementById("all-cards-btn").classList.add("active");
+      document.getElementById("study-mode-btn").classList.remove("active");
+      
+      document.getElementById("all-cards-panel").classList.remove("hidden");
+      document.getElementById("study-mode-panel").classList.add("hidden");
+      
+      fetchDecks();
+      fetchAllExplorerCards();
+    });
+
+    // Event listeners for filters and shuffles
+    document.getElementById("deck-select").addEventListener("change", (e) => {
+      selectedDeck = e.target.value;
+      loadNewStack();
+    });
+
+    document.getElementById("due-only-chk").addEventListener("change", (e) => {
+      dueOnly = e.target.checked;
+      loadNewStack();
+    });
+
+    document.getElementById("hide-mastered-chk").addEventListener("change", (e) => {
+      hideMastered = e.target.checked;
+      applyFilters();
+    });
+
+    document.getElementById("shuffle-btn").addEventListener("click", () => {
+      shuffleStack();
+    });
+
+    // Flashcard Flip Interaction
+    document.getElementById("flashcard-face").addEventListener("click", () => {
+      if (filteredCards.length === 0) return;
+      isFlipped = !isFlipped;
+      
+      const card = filteredCards[currentIndex];
+      const qView = document.getElementById("card-question-view");
+      const aView = document.getElementById("card-answer-view");
+      
+      if (isFlipped) {
+        qView.classList.add("hidden");
+        aView.classList.remove("hidden");
+        
+        // Target article for tooltip
+        const article = getArticleFromWord(card.german_word);
+        
+        document.getElementById("card-german-sentence").innerHTML = formatHighlight(card.german_sentence, article);
+        document.getElementById("card-gloss-text").innerHTML = `${formatHighlight(card.german_word)} — ${formatHighlight(card.english_gloss)}`;
+        
+        speakGerman(card.german_sentence);
+      } else {
+        aView.classList.add("hidden");
+        qView.classList.remove("hidden");
+      }
+    });
+
+    // Prev / Next Nav
+    document.getElementById("prev-btn").addEventListener("click", () => {
+      if (filteredCards.length === 0) return;
+      if (currentIndex > 0) {
+        currentIndex--;
+        isFlipped = false;
+        renderCard();
+      }
+    });
+
+    document.getElementById("next-btn").addEventListener("click", () => {
+      if (filteredCards.length === 0) return;
+      if (currentIndex < filteredCards.length - 1) {
+        currentIndex++;
+        isFlipped = false;
+        renderCard();
+      }
+    });
+
+    // Answer correctness updates
+    document.getElementById("know-btn").addEventListener("click", () => {
+      answerCard(true);
+    });
+
+    document.getElementById("reset-card-btn").addEventListener("click", () => {
+      answerCard(false);
+    });
+
+    // Load initial stack
+    async function loadNewStack() {
+      try {
+        const res = await fetch(`/api/cards?limit=10000&due_only=${dueOnly}&doc_id=${selectedDeck}`);
+        if (!res.ok) throw new Error("Load failed");
+        cards = await res.json();
+        applyFilters();
+      } catch (e) {
+        console.error(e);
+        document.getElementById("card-prompt-text").textContent = "Failed to load cards from server.";
+      }
+      fetchStats();
+      fetchDecks();
+    }
+
+    function applyFilters() {
+      filteredCards = [...cards];
+      
+      if (hideMastered) {
+        // Box 5 means mastered
+        filteredCards = filteredCards.filter(c => c.box < 5);
+      }
+      
+      currentIndex = 0;
+      isFlipped = false;
+      renderCard();
+    }
+
+    function shuffleStack() {
+      // Fisher-Yates shuffle
+      for (let i = filteredCards.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [filteredCards[i], filteredCards[j]] = [filteredCards[j], filteredCards[i]];
+      }
+      currentIndex = 0;
+      isFlipped = false;
+      renderCard();
+    }
+
+    function renderCard() {
+      const qView = document.getElementById("card-question-view");
+      const aView = document.getElementById("card-answer-view");
+      
+      qView.classList.remove("hidden");
+      aView.classList.add("hidden");
+
+      if (filteredCards.length === 0) {
+        document.getElementById("card-prompt-text").textContent = "No cards matches your filter.";
+        document.getElementById("card-progress-ratio").textContent = "0/0";
+        document.getElementById("progress-bar-fill").style.width = "0%";
+        document.getElementById("nav-counter").textContent = "Card 0 of 0";
+        return;
+      }
+
+      const card = filteredCards[currentIndex];
+      document.getElementById("card-level-badge").textContent = `Level: ${card.level}`;
+      document.getElementById("card-prompt-text").innerHTML = formatHighlight(card.english_sentence);
+      
+      // Update Ratio
+      const displayIndex = currentIndex + 1;
+      document.getElementById("card-progress-ratio").textContent = `${displayIndex}/${filteredCards.length}`;
+      
+      // Progress Bar fill
+      const percentage = (displayIndex / filteredCards.length) * 100;
+      document.getElementById("progress-bar-fill").style.width = `${percentage}%`;
+      
+      // Counter
+      document.getElementById("nav-counter").textContent = `Card ${displayIndex} of ${filteredCards.length}`;
+    }
+
+    async function answerCard(correct) {
+      if (filteredCards.length === 0) return;
+      const card = filteredCards[currentIndex];
+      
+      try {
+        const res = await fetch("/api/review", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ card_id: card.id, correct: correct })
+        });
+        if (!res.ok) throw new Error();
+        
+        // Remove reviewed card from the active stack if it is mastered and hide mastered is active
+        if (correct && hideMastered) {
+          card.box = Math.min(card.box + 1, 5);
+          if (card.box === 5) {
+            filteredCards.splice(currentIndex, 1);
+            if (currentIndex >= filteredCards.length) {
+              currentIndex = Math.max(0, filteredCards.length - 1);
+            }
+            isFlipped = false;
+            renderCard();
+            fetchStats();
+            return;
+          }
+        }
+        
+        // Auto advance to next card
+        if (currentIndex < filteredCards.length - 1) {
+          currentIndex++;
+        } else {
+          currentIndex = 0; // Wrap around
+        }
+        isFlipped = false;
+        renderCard();
+      } catch (e) {
+        console.error(e);
+      }
+      fetchStats();
+    }
+
+    // Study statistics load
+    async function fetchStats() {
+      try {
+        const res = await fetch("/api/stats");
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        
+        const total = Object.values(data.by_box).reduce((a, b) => a + b, 0);
+        const mastered = data.by_box["5"] || 0;
+        const inProgress = (data.by_box["2"] || 0) + (data.by_box["3"] || 0) + (data.by_box["4"] || 0);
+        const notStarted = data.by_box["1"] || 0;
+        
+        document.getElementById("stat-total").textContent = total;
+        document.getElementById("stat-mastered").textContent = mastered;
+        document.getElementById("stat-progress").textContent = inProgress;
+        document.getElementById("stat-unstarted").textContent = notStarted;
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // Decks list load
+    async function fetchDecks() {
+      try {
+        const res = await fetch("/api/docs");
+        if (!res.ok) throw new Error();
+        const docs = await res.json();
+        
+        const select = document.getElementById("deck-select");
+        const currentVal = select.value;
+        select.innerHTML = '<option value="ALL">All Categories</option>';
+        docs.forEach(doc => {
+          const opt = document.createElement("option");
+          opt.value = doc.id;
+          opt.textContent = doc.filename;
+          select.appendChild(opt);
+        });
+        if (currentVal && Array.from(select.options).some(o => o.value === currentVal)) {
+          select.value = currentVal;
+        }
+        
+        const sidebarDecksList = document.getElementById("sidebar-decks-list");
+        if (docs.length === 0) {
+          sidebarDecksList.innerHTML = '<div style="color: #666; font-size: 0.8rem; font-weight: bold; text-align: center; padding: 5px 0;">No decks loaded</div>';
+        } else {
+          sidebarDecksList.innerHTML = docs.map(doc => `
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px dashed #eee; padding: 5px 0; gap: 10px;">
+              <span style="font-weight: 700; font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 65%;" title="${doc.filename}">
+                📁 ${doc.filename}
+              </span>
+              <button class="brutal-btn pill" style="padding: 2px 6px; font-size: 0.7rem; border-color: #ff3333; color: #ff3333; box-shadow: 1.5px 1.5px 0px 0px #ff3333;" onclick="deleteDeck(${doc.id})">DEL</button>
+            </div>
+          `).join("");
+        }
+        
+        const decksList = document.getElementById("decks-list");
+        if (docs.length === 0) {
+          decksList.innerHTML = '<div style="color: #666; font-size: 0.95rem; font-weight: bold; padding: 10px 0;">NO DECKS UPLOADED YET.</div>';
+        } else {
+          decksList.innerHTML = docs.map(doc => `
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #ddd; padding: 10px 0; gap: 15px;">
+              <span style="font-weight: 700; font-size: 0.95rem;">
+                📁 ${doc.filename} <span style="color: var(--card-pink-hover); font-weight: 800; margin-left: 5px;">[${doc.card_count} Vocabs]</span>
+              </span>
+              <button class="brutal-btn pill" style="border-color: #ff3333; color: #ff3333; box-shadow: 2px 2px 0px 0px #ff3333;" onclick="deleteDeck(${doc.id})">DELETE</button>
+            </div>
+          `).join("");
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function deleteDeck(docId) {
+      if (!confirm("Are you sure you want to delete this deck and all its flashcards?")) return;
+      try {
+        const res = await fetch(`/api/docs/${docId}`, { method: "DELETE" });
+        if (!res.ok) throw new Error();
+        if (String(selectedDeck) === String(docId)) {
+          selectedDeck = "ALL";
+          document.getElementById("deck-select").value = "ALL";
+        }
+        cards = [];
+        filteredCards = [];
+        currentIndex = 0;
+        isFlipped = false;
+        await fetchDecks();
+        await loadNewStack();
+        await fetchAllExplorerCards();
+      } catch (e) {
+        console.error(e);
+        alert("Failed to delete deck. Please try again.");
+      }
+    }
+
+    // Vocabulary Explorer
+    async function fetchAllExplorerCards() {
+      try {
+        const res = await fetch("/api/cards?limit=10000&due_only=false");
+        if (!res.ok) throw new Error();
+        allExplorerCards = await res.json();
+        renderExplorerTable(allExplorerCards);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function renderExplorerTable(items) {
+      const body = document.getElementById("vocab-table-body");
+      if (items.length === 0) {
+        body.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #666; font-weight: bold; padding: 15px;">No vocabulary items found.</td></tr>';
+        return;
+      }
+      body.innerHTML = items.map(item => `
+        <tr>
+          <td style="font-weight: 800;">${item.german_word.replace(/\*\*/g, "")}</td>
+          <td>${item.english_gloss.replace(/\*\*/g, "")}</td>
+          <td style="text-transform: uppercase;"><span class="category-badge" style="margin: 0; padding: 2px 8px; font-size: 0.7rem;">${item.level}</span></td>
+          <td><strong style="color: var(--card-pink-hover);">Box ${item.box}</strong></td>
+        </tr>
+      `).join("");
+    }
+
+    document.getElementById("vocab-search").addEventListener("input", (e) => {
+      const q = e.target.value.toLowerCase();
+      const filtered = allExplorerCards.filter(c => 
+        c.german_word.toLowerCase().includes(q) || 
+        c.english_gloss.toLowerCase().includes(q) ||
+        c.german_sentence.toLowerCase().includes(q) ||
+        c.english_sentence.toLowerCase().includes(q)
+      );
+      renderExplorerTable(filtered);
+    });
+
+    // File Upload Setup Helper
+    function setupUploadListener(inputElement, statusElement) {
+      inputElement.addEventListener("change", async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const formData = new FormData();
+        formData.append("file", file);
+        
+        statusElement.classList.remove("hidden");
+        statusElement.textContent = "Processing PDF...";
+        statusElement.style.color = "var(--text-color)";
+        
+        try {
+          const response = await fetch("/api/upload?level=B1", {
+            method: "POST",
+            body: formData
+          });
+          
+          if (!response.ok) throw new Error("Upload failed");
+
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder();
+          let buffer = "";
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split("\n");
+            buffer = lines.pop();
+
+            for (const line of lines) {
+              if (!line.trim()) continue;
+              try {
+                const data = JSON.parse(line);
+                if (data.status === "complete") {
+                  statusElement.textContent = `✓ Upload complete! Added ${data.cards_added} flashcards successfully.`;
+                  statusElement.style.color = "var(--accent-color)";
+                  
+                  await fetchDecks();
+                  await loadNewStack();
+                  await fetchAllExplorerCards();
+                  
+                  setTimeout(() => {
+                    statusElement.classList.add("hidden");
+                  }, 4000);
+                }
+              } catch (e) {
+                console.error(e);
+              }
+            }
+          }
+        } catch (err) {
+          statusElement.textContent = "✗ Error: " + (err.message || "Failed.");
+          statusElement.style.color = "#ff3333";
+        }
+      });
+    }
+
+    setupUploadListener(document.getElementById("file-input"), document.getElementById("status-message"));
+    setupUploadListener(document.getElementById("sidebar-file-input"), document.getElementById("sidebar-status-msg"));
+
+    // Keyboard Shortcuts for Anki Spaced Repetition
+    document.addEventListener("keydown", (e) => {
+      // Ignore keypresses inside search query fields or dropdowns
+      if (document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "SELECT") {
+        return;
+      }
+      
+      if (e.code === "Space") {
+        e.preventDefault();
+        if (filteredCards.length > 0) {
+          document.getElementById("flashcard-face").click();
+        }
+      } else if (e.code === "ArrowRight") {
+        e.preventDefault();
+        document.getElementById("next-btn").click();
+      } else if (e.code === "ArrowLeft") {
+        e.preventDefault();
+        document.getElementById("prev-btn").click();
+      } else if (e.code === "Digit1" || e.code === "Numpad1") {
+        if (isFlipped && filteredCards.length > 0) {
+          document.getElementById("reset-card-btn").click();
+        }
+      } else if (e.code === "Digit2" || e.code === "Numpad2" || e.code === "Enter") {
+        if (isFlipped && filteredCards.length > 0) {
+          document.getElementById("know-btn").click();
+        }
+      }
+    });
+
+    // Initial load on start
+    window.onload = () => {
+      loadNewStack();
+    };
+  </script>
+</body>
+</html>

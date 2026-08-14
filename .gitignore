@@ -1,0 +1,15 @@
+.env
+.env.local
+data/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.agents/
+.idea/
+.vscode/
+.cursor/
+*.db
+terminals/
+agent-transcripts/
