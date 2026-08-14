@@ -5,4 +5,4 @@ firecrawl-anydoc
 pymupdf
 openai
 python-dotenv
-gradio==6.23.1
+gradio==6.24.0
