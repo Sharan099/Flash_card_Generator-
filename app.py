@@ -7,7 +7,7 @@ import re
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import HTMLResponse, PlainTextResponse, StreamingResponse
 from pydantic import BaseModel
-import fitz
+import pymupdf as fitz
 import llm
 
 DB_PATH = "data/lingo.db"
