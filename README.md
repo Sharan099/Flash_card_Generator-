@@ -5,6 +5,7 @@ colorFrom: blue
 colorTo: indigo
 sdk: gradio
 app_file: app.py
+app_port: 7860
 pinned: false
 ---
 
@@ -49,6 +50,17 @@ python app.py
 ```
 
 Open the URL printed in the terminal (default `http://127.0.0.1:7860`).
+
+### Share with a friend (Hugging Face Space)
+
+1. Create the Space at `sharan099/flash-card-generator` if it does not exist yet (SDK: **Gradio**).
+2. In the Space **Settings**, set visibility to **Public**.
+3. Add Space **Secrets**: `LLM_API_KEY` (and optional `GROQ_API_KEY`, `LLM_BASE_URL`, `LLM_MODEL`).
+4. Share this URL:
+
+   `https://huggingface.co/spaces/sharan099/flash-card-generator`
+
+Do **not** use `share=True` in `demo.launch()` — the public Space URL is the share link.
 
 ### Local development (FastAPI + study UI)
 

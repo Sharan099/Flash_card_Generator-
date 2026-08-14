@@ -2,8 +2,17 @@
 import inspect
 import os
 
-# ponytail: HF Spaces force gradio 6.24; disable SSR to avoid Node proxy crash on /config
-os.environ.setdefault("GRADIO_SSR_MODE", "false")
+# ponytail: HF may set SSR=true; force off to avoid Node proxy crash on gradio 6.24 /config bug
+os.environ["GRADIO_SSR_MODE"] = "false"
+
+
+def _iter_routes(routes):
+    for route in routes:
+        nested = getattr(route, "routes", None)
+        if nested:
+            yield from _iter_routes(nested)
+        else:
+            yield route
 
 
 def _patch_gradio624_get_config():
@@ -33,45 +42,47 @@ def _patch_gradio624_get_config():
         )
 
         get_current_user_fn = None
-        config_routes = []
-        for route in starlette_app.routes:
+        for route in _iter_routes(starlette_app.routes):
             ep = getattr(route, "endpoint", None)
-            name = getattr(ep, "__name__", "")
-            if name == "get_current_user":
+            if getattr(ep, "__name__", "") == "get_current_user":
                 get_current_user_fn = ep
-            elif name == "get_config":
-                config_routes.append(route)
+                break
 
-        if get_current_user_fn and inspect.iscoroutinefunction(get_current_user_fn):
-            for route in config_routes:
-                _blocks = blocks
-                _app = starlette_app
-                _gcu = get_current_user_fn
+        if get_current_user_fn is None or not inspect.iscoroutinefunction(get_current_user_fn):
+            return starlette_app
 
-                async def get_config_fixed(
-                    request,
-                    deep_link="",
-                    _blocks=_blocks,
-                    _app=_app,
-                    _gcu=_gcu,
-                ):
-                    config = utils.safe_deepcopy(_app.get_blocks().config)
-                    root = route_utils.get_root_url(
-                        request=request,
-                        route_path="/config",
-                        root_path=_app.root_path
-                        or request.scope.get("root_path")
-                        or _blocks.custom_mount_path,
-                    )
-                    config["username"] = await _gcu(request)
-                    if hasattr(_blocks, "i18n_instance") and _blocks.i18n_instance:
-                        config["i18n_translations"] = _blocks.i18n_instance.translations_dict
-                    else:
-                        config["i18n_translations"] = None
-                    config = route_utils.update_root_in_config(config, root)
-                    return ORJSONResponse(content=config)
+        for route in _iter_routes(starlette_app.routes):
+            if getattr(getattr(route, "endpoint", None), "__name__", "") != "get_config":
+                continue
 
-                route.endpoint = get_config_fixed
+            _blocks = blocks
+            _app = starlette_app
+            _gcu = get_current_user_fn
+
+            async def get_config_fixed(
+                request,
+                deep_link="",
+                _blocks=_blocks,
+                _app=_app,
+                _gcu=_gcu,
+            ):
+                config = utils.safe_deepcopy(_app.get_blocks().config)
+                root = route_utils.get_root_url(
+                    request=request,
+                    route_path="/config",
+                    root_path=_app.root_path
+                    or request.scope.get("root_path")
+                    or _blocks.custom_mount_path,
+                )
+                config["username"] = await _gcu(request)
+                if hasattr(_blocks, "i18n_instance") and _blocks.i18n_instance:
+                    config["i18n_translations"] = _blocks.i18n_instance.translations_dict
+                else:
+                    config["i18n_translations"] = None
+                config = route_utils.update_root_in_config(config, root)
+                return ORJSONResponse(content=config)
+
+            route.endpoint = get_config_fixed
 
         gr_routes._fcg_get_config_patched = True
         return starlette_app
@@ -99,18 +110,12 @@ def _generate(pdf_file, level):
         raise gr.Error("Could not read the uploaded file.")
 
     filename = os.path.basename(path)
-    status = "Processing…"
-
-    def on_progress(msg: str):
-        nonlocal status
-        status = msg
 
     try:
         result = flashcard_service.generate_flashcards(
             path,
             level=level,
             filename=filename,
-            progress_callback=on_progress,
         )
     except ValueError as exc:
         raise gr.Error(str(exc)) from exc
@@ -136,7 +141,9 @@ with gr.Blocks(title="Flash Card Generator") as demo:
     gr.Markdown(
         "# 📚 Flash Card Generator\n"
         "Upload a German vocabulary PDF to extract flashcards. "
-        "Structured PDFs are parsed directly; others use an LLM fallback."
+        "Structured PDFs are parsed directly; others use an LLM fallback.\n\n"
+        "**Share this app:** send friends your Hugging Face Space URL "
+        "(Space must be set to **Public** in Settings)."
     )
 
     with gr.Row():
@@ -162,5 +169,11 @@ with gr.Blocks(title="Flash Card Generator") as demo:
     )
     clear_btn.click(fn=_clear_outputs, outputs=[status_out, cards_out, json_out, pdf_input])
 
+demo.queue()
+
 if __name__ == "__main__":
-    demo.launch(ssr_mode=False)
+    demo.launch(
+        ssr_mode=False,
+        server_name="0.0.0.0",
+        server_port=int(os.getenv("PORT", "7860")),
+    )
