@@ -84,4 +84,4 @@ with gr.Blocks(title="Flash Card Generator") as demo:
     clear_btn.click(fn=_clear_outputs, outputs=[status_out, cards_out, json_out, pdf_input])
 
 if __name__ == "__main__":
-    demo.launch(theme=gr.themes.Soft())
+    demo.launch()
