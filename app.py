@@ -3,6 +3,8 @@ import base64
 import json
 import os
 
+import spaces
+
 _WIDGET_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "study_widget.html")
 _EMPTY_WIDGET = '<div style="font-family:Outfit,sans-serif;padding:40px;text-align:center;color:#666">Upload a PDF to begin.</div>'
 
@@ -47,6 +49,7 @@ def build_study_html(cards: list[dict]) -> str:
     )
 
 
+@spaces.GPU(duration=120)
 def _generate(pdf_file, level):
     if pdf_file is None:
         raise gr.Error("Please upload a PDF file.")
