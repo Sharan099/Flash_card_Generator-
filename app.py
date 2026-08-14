@@ -1,11 +1,7 @@
 """Hugging Face Space entry point — Gradio UI for flashcard generation."""
 import base64
-import inspect
 import json
 import os
-
-# ponytail: HF may set SSR=true; force off to avoid Node proxy crash on gradio 6.24 /config bug
-os.environ["GRADIO_SSR_MODE"] = "false"
 
 _WIDGET_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "study_widget.html")
 _EMPTY_WIDGET = '<div style="font-family:Outfit,sans-serif;padding:40px;text-align:center;color:#666">Upload a PDF to begin.</div>'
@@ -24,92 +20,6 @@ footer { display: none !important; }
 }
 """
 
-
-def _iter_routes(routes):
-    for route in routes:
-        nested = getattr(route, "routes", None)
-        if nested:
-            yield from _iter_routes(nested)
-        else:
-            yield route
-
-
-def _patch_gradio624_get_config():
-    """ponytail: gradio 6.24 get_config calls async get_current_user without await."""
-    import gradio.route_utils as route_utils
-    import gradio.routes as gr_routes
-    import gradio.utils as utils
-    from gradio.routes import ORJSONResponse
-
-    if getattr(gr_routes, "_fcg_get_config_patched", False):
-        return
-
-    orig_create_app = gr_routes.App.create_app
-
-    @staticmethod
-    def patched_create_app(
-        blocks,
-        app=None,
-        app_kwargs=None,
-        auth_dependency=None,
-        strict_cors=True,
-        mcp_server=None,
-        debug=False,
-    ):
-        starlette_app = orig_create_app(
-            blocks, app, app_kwargs, auth_dependency, strict_cors, mcp_server, debug
-        )
-
-        get_current_user_fn = None
-        for route in _iter_routes(starlette_app.routes):
-            ep = getattr(route, "endpoint", None)
-            if getattr(ep, "__name__", "") == "get_current_user":
-                get_current_user_fn = ep
-                break
-
-        if get_current_user_fn is None or not inspect.iscoroutinefunction(get_current_user_fn):
-            return starlette_app
-
-        for route in _iter_routes(starlette_app.routes):
-            if getattr(getattr(route, "endpoint", None), "__name__", "") != "get_config":
-                continue
-
-            _blocks = blocks
-            _app = starlette_app
-            _gcu = get_current_user_fn
-
-            async def get_config_fixed(
-                request,
-                deep_link="",
-                _blocks=_blocks,
-                _app=_app,
-                _gcu=_gcu,
-            ):
-                config = utils.safe_deepcopy(_app.get_blocks().config)
-                root = route_utils.get_root_url(
-                    request=request,
-                    route_path="/config",
-                    root_path=_app.root_path
-                    or request.scope.get("root_path")
-                    or _blocks.custom_mount_path,
-                )
-                config["username"] = await _gcu(request)
-                if hasattr(_blocks, "i18n_instance") and _blocks.i18n_instance:
-                    config["i18n_translations"] = _blocks.i18n_instance.translations_dict
-                else:
-                    config["i18n_translations"] = None
-                config = route_utils.update_root_in_config(config, root)
-                return ORJSONResponse(content=config)
-
-            route.endpoint = get_config_fixed
-
-        gr_routes._fcg_get_config_patched = True
-        return starlette_app
-
-    gr_routes.App.create_app = patched_create_app
-
-
-_patch_gradio624_get_config()
 
 import gradio as gr
 
@@ -161,7 +71,7 @@ def _generate(pdf_file, level):
     return build_study_html(result["cards"])
 
 
-with gr.Blocks(title="Flashcard") as demo:
+with gr.Blocks(title="Flashcard", css=GRADIO_CSS) as demo:
     with gr.Group(elem_classes=["fcg-upload-panel"]):
         gr.Markdown("### Upload a German vocabulary PDF")
         with gr.Row():
@@ -184,9 +94,4 @@ with gr.Blocks(title="Flashcard") as demo:
 demo.queue()
 
 if __name__ == "__main__":
-    demo.launch(
-        css=GRADIO_CSS,
-        ssr_mode=False,
-        server_name="0.0.0.0",
-        server_port=int(os.getenv("PORT", "7860")),
-    )
+    demo.launch()
