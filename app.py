@@ -71,7 +71,7 @@ def _generate(pdf_file, level):
     return build_study_html(result["cards"])
 
 
-with gr.Blocks(title="Flashcard", css=GRADIO_CSS) as demo:
+with gr.Blocks(title="Flashcard") as demo:
     with gr.Group(elem_classes=["fcg-upload-panel"]):
         gr.Markdown("### Upload a German vocabulary PDF")
         with gr.Row():
@@ -94,4 +94,4 @@ with gr.Blocks(title="Flashcard", css=GRADIO_CSS) as demo:
 demo.queue()
 
 if __name__ == "__main__":
-    demo.launch()
+    demo.launch(css=GRADIO_CSS, ssr_mode=False)
