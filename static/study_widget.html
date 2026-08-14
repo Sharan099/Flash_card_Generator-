@@ -1,0 +1,443 @@
+<div id="fcg-root" class="fcg-root">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap');
+  .fcg-root {
+    --bg-color: #faf6ed;
+    --text-color: #1a1a1a;
+    --accent-color: #00e588;
+    --yellow-accent: #f2c94c;
+    --border-color: #1a1a1a;
+    --card-pink: #f472b6;
+    --card-pink-hover: #ec4899;
+    font-family: 'Outfit', sans-serif;
+    color: var(--text-color);
+    width: 100%;
+  }
+  .fcg-root * { box-sizing: border-box; }
+  .fcg-container { max-width: 1050px; margin: 0 auto; display: flex; flex-direction: column; gap: 25px; }
+  .fcg-top-header {
+    display: flex; justify-content: space-between; align-items: center;
+    border: 2px solid var(--border-color); border-radius: 16px; padding: 15px 25px;
+    background: #fff; box-shadow: 4px 4px 0 var(--border-color);
+  }
+  .fcg-logo { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 1.4rem; }
+  .fcg-logo-icon {
+    width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--border-color);
+    background: var(--yellow-accent); display: flex; align-items: center; justify-content: center;
+    box-shadow: 2px 2px 0 var(--border-color); font-size: 1.1rem;
+  }
+  .fcg-mode-toggles { display: flex; gap: 10px; }
+  .fcg-mode-btn {
+    border: 2px solid var(--border-color); border-radius: 50px; padding: 8px 18px;
+    font-weight: 700; font-size: 0.9rem; cursor: pointer; background: transparent;
+    box-shadow: 2px 2px 0 var(--border-color); font-family: inherit;
+  }
+  .fcg-mode-btn.active { background: var(--yellow-accent); }
+  .fcg-main { display: flex; gap: 30px; align-items: flex-start; }
+  .fcg-player { flex: 1.5; display: flex; flex-direction: column; gap: 20px; }
+  .fcg-player-header {
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+    background: #fff; border: 2px solid var(--border-color); border-radius: 14px; padding: 12px 20px;
+    box-shadow: 4px 4px 0 var(--border-color);
+  }
+  .fcg-header-left { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .fcg-select {
+    border: 2px solid var(--border-color); border-radius: 50px; padding: 6px 30px 6px 15px;
+    font-weight: 700; font-size: 0.85rem; font-family: inherit; background: #fff; cursor: pointer;
+  }
+  .fcg-check { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; }
+  .fcg-check input { accent-color: var(--yellow-accent); width: 16px; height: 16px; }
+  .fcg-btn {
+    border: 2px solid var(--border-color); border-radius: 50px; padding: 10px 22px;
+    font-weight: 800; font-family: inherit; cursor: pointer; background: #fff;
+    box-shadow: 3px 3px 0 var(--border-color); display: inline-flex; align-items: center; gap: 8px;
+  }
+  .fcg-btn.pill { padding: 6px 15px; font-size: 0.85rem; }
+  .fcg-btn.yellow { background: var(--yellow-accent); }
+  .fcg-flip-scene { perspective: 1400px; min-height: 380px; }
+  .fcg-flip-card {
+    position: relative; width: 100%; min-height: 380px; transform-style: preserve-3d;
+    transition: transform 0.55s cubic-bezier(.4,.2,.2,1); cursor: pointer;
+  }
+  .fcg-flip-card.flipped { transform: rotateY(180deg); }
+  .fcg-face {
+    position: absolute; inset: 0; backface-visibility: hidden; border: 2px solid var(--border-color);
+    border-radius: 20px; box-shadow: 6px 6px 0 var(--border-color); padding: 35px;
+    display: flex; flex-direction: column; justify-content: space-between; overflow: hidden;
+  }
+  .fcg-face-front { background: var(--card-pink); }
+  .fcg-face-back { background: #fff; transform: rotateY(180deg); }
+  .fcg-grid-overlay {
+    position: absolute; inset: 0; pointer-events: none;
+    background-image: linear-gradient(to right, rgba(255,255,255,.12) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,.12) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  .fcg-star { position: absolute; font-size: 1.1rem; font-weight: 800; z-index: 3; }
+  .fcg-star.yellow { top: 18px; left: 18px; color: #f2c94c; }
+  .fcg-star.blue { bottom: 70px; right: 22px; color: #60a5fa; }
+  .fcg-badge {
+    align-self: center; background: #fff; border: 2px solid var(--border-color); border-radius: 50px;
+    padding: 4px 15px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase;
+    box-shadow: 2px 2px 0 var(--border-color); z-index: 2;
+  }
+  .fcg-card-text {
+    flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;
+    text-align: center; gap: 15px; z-index: 2; padding: 10px 0;
+  }
+  .fcg-prompt { font-size: 1.9rem; font-weight: 800; line-height: 1.35; max-width: 600px; }
+  .fcg-hint { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.65; }
+  .fcg-german { font-size: 1.9rem; font-weight: 800; line-height: 1.35; max-width: 600px; }
+  .fcg-gloss {
+    font-size: 1.2rem; font-weight: 800; margin-top: 20px; padding-top: 15px;
+    border-top: 2px dashed rgba(26,26,26,.2); width: 80%; max-width: 450px;
+  }
+  .fcg-speak-btn {
+    margin-top: 12px; border: 2px solid var(--border-color); border-radius: 50px;
+    padding: 8px 16px; font-weight: 800; font-family: inherit; cursor: pointer;
+    background: var(--yellow-accent); box-shadow: 2px 2px 0 var(--border-color);
+  }
+  .fcg-progress-row { display: flex; align-items: center; gap: 15px; z-index: 2; }
+  .fcg-progress-bg {
+    flex: 1; height: 12px; background: #fff; border: 2px solid var(--border-color);
+    border-radius: 50px; overflow: hidden;
+  }
+  .fcg-progress-fill { height: 100%; background: var(--text-color); width: 0%; transition: width .2s; }
+  .fcg-progress-label { font-weight: 800; font-size: 0.85rem; white-space: nowrap; }
+  .fcg-actions { display: flex; gap: 20px; }
+  .fcg-actions .fcg-btn { flex: 1; justify-content: center; padding: 14px; font-size: 1.05rem; }
+  .fcg-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    background: #fff; border: 2px solid var(--border-color); border-radius: 14px;
+    padding: 10px 20px; box-shadow: 4px 4px 0 var(--border-color);
+  }
+  .fcg-stats { flex: 1; display: flex; flex-direction: column; gap: 20px; }
+  .fcg-section-title {
+    font-size: 1.25rem; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 0.05em; color: rgba(26,26,26,.7);
+  }
+  .fcg-stat-card {
+    display: flex; justify-content: space-between; border: 2px solid var(--border-color);
+    border-radius: 14px; background: #fff; box-shadow: 4px 4px 0 var(--border-color); overflow: hidden;
+  }
+  .fcg-stat-left { padding: 15px 20px; display: flex; flex-direction: column; justify-content: center; }
+  .fcg-stat-label { font-size: 0.8rem; font-weight: 800; text-transform: uppercase; color: #666; }
+  .fcg-stat-value { font-size: 2.3rem; font-weight: 800; line-height: 1.1; margin-top: 5px; }
+  .fcg-stat-icon {
+    width: 65px; display: flex; align-items: center; justify-content: center;
+    border-left: 2px solid var(--border-color); font-size: 1.4rem;
+  }
+  .bg-blue { background: #a5c4f7; } .bg-teal { background: #4cd3c2; }
+  .bg-pink { background: #ff758f; } .bg-magenta { background: #f472b6; }
+  .fcg-hidden { display: none !important; }
+  .fcg-empty {
+    text-align: center; padding: 60px 20px; border: 2px dashed var(--border-color);
+    border-radius: 16px; background: #fff; font-weight: 700; font-size: 1.1rem;
+  }
+  .fcg-panel {
+    background: #fff; border: 2px solid var(--border-color); border-radius: 16px;
+    padding: 24px; box-shadow: 4px 4px 0 var(--border-color); width: 100%;
+  }
+  .fcg-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+  .fcg-table th, .fcg-table td { padding: 12px 10px; text-align: left; border-bottom: 1px dashed #ddd; }
+  .fcg-table th { font-weight: 800; text-transform: uppercase; font-size: 0.8rem; border-bottom: 2px solid var(--border-color); }
+  .fcg-search {
+    padding: 8px 12px; border: 2px solid var(--border-color); border-radius: 8px;
+    font-family: inherit; font-weight: 600; width: 100%; max-width: 320px;
+  }
+  .fcg-hl { color: var(--accent-color); font-weight: 800; }
+  @media (max-width: 850px) { .fcg-main { flex-direction: column; } }
+</style>
+
+<div class="fcg-container">
+  <header class="fcg-top-header">
+    <div class="fcg-logo"><span class="fcg-logo-icon">🎴</span><span>Flashcard</span></div>
+    <div class="fcg-mode-toggles">
+      <button type="button" class="fcg-mode-btn active" id="fcg-study-btn">Study Mode</button>
+      <button type="button" class="fcg-mode-btn" id="fcg-all-btn">All Cards</button>
+    </div>
+  </header>
+
+  <div id="fcg-empty" class="fcg-empty fcg-hidden">Upload a PDF above and click <strong>Generate Flashcards</strong> to start studying.</div>
+
+  <div id="fcg-study-panel" class="fcg-main fcg-hidden">
+    <div class="fcg-player">
+      <div class="fcg-player-header">
+        <div class="fcg-header-left">
+          <select id="fcg-category" class="fcg-select" aria-label="Category filter">
+            <option value="ALL">All Categories</option>
+          </select>
+          <label class="fcg-check"><input type="checkbox" id="fcg-hide-mastered"> Hide Mastered</label>
+        </div>
+        <button type="button" class="fcg-btn pill" id="fcg-shuffle">↻ Shuffle</button>
+      </div>
+
+      <div class="fcg-flip-scene" id="fcg-flip-scene">
+        <div class="fcg-flip-card" id="fcg-flip-card" tabindex="0" aria-label="Flashcard — click or press space to flip">
+          <div class="fcg-face fcg-face-front">
+            <div class="fcg-grid-overlay"></div>
+            <span class="fcg-star yellow">✦</span>
+            <span class="fcg-star blue">✦</span>
+            <div class="fcg-badge" id="fcg-badge">Level: B1</div>
+            <div class="fcg-card-text">
+              <div class="fcg-prompt" id="fcg-front-text">Loading…</div>
+              <div class="fcg-hint">Click or press Space to flip</div>
+            </div>
+            <div class="fcg-progress-row">
+              <div class="fcg-progress-bg"><div class="fcg-progress-fill" id="fcg-progress-fill"></div></div>
+              <span class="fcg-progress-label" id="fcg-progress-label">0/0</span>
+            </div>
+          </div>
+          <div class="fcg-face fcg-face-back">
+            <div class="fcg-badge" id="fcg-badge-back">Level: B1</div>
+            <div class="fcg-card-text">
+              <div class="fcg-german" id="fcg-back-german"></div>
+              <div class="fcg-gloss" id="fcg-back-gloss"></div>
+              <button type="button" class="fcg-speak-btn" id="fcg-speak-btn">🔊 Hear German</button>
+            </div>
+            <div class="fcg-progress-row">
+              <div class="fcg-progress-bg"><div class="fcg-progress-fill" id="fcg-progress-fill-back"></div></div>
+              <span class="fcg-progress-label" id="fcg-progress-label-back">0/0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fcg-actions">
+        <button type="button" class="fcg-btn yellow" id="fcg-know">✓ I Know This</button>
+        <button type="button" class="fcg-btn" id="fcg-reset">↺ Reset Progress</button>
+      </div>
+      <div class="fcg-footer">
+        <button type="button" class="fcg-btn pill" id="fcg-prev">&lt; Previous</button>
+        <span id="fcg-nav-counter" style="font-weight:800">Card 0 of 0</span>
+        <button type="button" class="fcg-btn pill" id="fcg-next">Next &gt;</button>
+      </div>
+    </div>
+
+    <div class="fcg-stats">
+      <h2 class="fcg-section-title">Study Statistics</h2>
+      <div class="fcg-stat-card"><div class="fcg-stat-left"><span class="fcg-stat-label">Total Cards</span><span class="fcg-stat-value" id="fcg-stat-total">0</span></div><div class="fcg-stat-icon bg-blue">📚</div></div>
+      <div class="fcg-stat-card"><div class="fcg-stat-left"><span class="fcg-stat-label">Mastered</span><span class="fcg-stat-value" id="fcg-stat-mastered">0</span></div><div class="fcg-stat-icon bg-teal">📖</div></div>
+      <div class="fcg-stat-card"><div class="fcg-stat-left"><span class="fcg-stat-label">In Progress</span><span class="fcg-stat-value" id="fcg-stat-progress">0</span></div><div class="fcg-stat-icon bg-pink">📗</div></div>
+      <div class="fcg-stat-card"><div class="fcg-stat-left"><span class="fcg-stat-label">Not Started</span><span class="fcg-stat-value" id="fcg-stat-new">0</span></div><div class="fcg-stat-icon bg-magenta">📕</div></div>
+    </div>
+  </div>
+
+  <div id="fcg-all-panel" class="fcg-panel fcg-hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:15px">
+      <h3 style="margin:0;font-weight:800;text-transform:uppercase;letter-spacing:.05em">Vocabulary Explorer</h3>
+      <input type="text" id="fcg-search" class="fcg-search" placeholder="Search vocabulary…">
+    </div>
+    <div style="overflow-x:auto;max-height:500px">
+      <table class="fcg-table">
+        <thead><tr><th>German Word</th><th>English</th><th>Level</th><th>Box</th></tr></thead>
+        <tbody id="fcg-table-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const INITIAL = __CARDS_JSON__;
+  const STORAGE = "fcg_boxes_v1";
+  let allCards = Array.isArray(INITIAL) ? INITIAL.map((c, i) => ({ ...c, _idx: i })) : [];
+  let filtered = [];
+  let current = 0;
+  let flipped = false;
+
+  const $ = (id) => document.getElementById(id);
+
+  function strip(s) { return (s || "").replace(/\*\*/g, ""); }
+  function hl(text) {
+    return strip(text).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/\*\*(.*?)\*\*/g, '<span class="fcg-hl">$1</span>');
+  }
+  function cardKey(c) { return `${c._idx}:${strip(c.german_word)}:${strip(c.german_sentence)}`; }
+  function loadBoxes() {
+    try { return JSON.parse(localStorage.getItem(STORAGE) || "{}"); } catch { return {}; }
+  }
+  function saveBoxes(boxes) { localStorage.setItem(STORAGE, JSON.stringify(boxes)); }
+  function getBox(c) { return loadBoxes()[cardKey(c)] || 1; }
+  function setBox(c, box) {
+    const b = loadBoxes(); b[cardKey(c)] = Math.min(5, Math.max(1, box)); saveBoxes(b);
+  }
+
+  function speakGerman(text) {
+    if (!("speechSynthesis" in window)) return;
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(strip(text));
+    u.lang = "de-DE";
+    const voices = speechSynthesis.getVoices();
+    const de = voices.find(v => v.lang.startsWith("de"));
+    if (de) u.voice = de;
+    speechSynthesis.speak(u);
+  }
+  if ("speechSynthesis" in window) speechSynthesis.getVoices();
+
+  function updateStats() {
+    let mastered = 0, progress = 0, fresh = 0;
+    allCards.forEach(c => {
+      const b = getBox(c);
+      if (b >= 5) mastered++;
+      else if (b > 1) progress++;
+      else fresh++;
+    });
+    $("fcg-stat-total").textContent = allCards.length;
+    $("fcg-stat-mastered").textContent = mastered;
+    $("fcg-stat-progress").textContent = progress;
+    $("fcg-stat-new").textContent = fresh;
+  }
+
+  function populateCategories() {
+    const sel = $("fcg-category");
+    const levels = [...new Set(allCards.map(c => c.level).filter(Boolean))].sort();
+    sel.innerHTML = '<option value="ALL">All Categories</option>';
+    levels.forEach(l => {
+      const o = document.createElement("option");
+      o.value = l; o.textContent = l; sel.appendChild(o);
+    });
+  }
+
+  function applyFilters() {
+    const cat = $("fcg-category").value;
+    const hide = $("fcg-hide-mastered").checked;
+    filtered = allCards.filter(c => {
+      if (cat !== "ALL" && c.level !== cat) return false;
+      if (hide && getBox(c) >= 5) return false;
+      return true;
+    });
+    current = Math.min(current, Math.max(0, filtered.length - 1));
+    flipped = false;
+    renderCard();
+    renderTable(allCards);
+    updateStats();
+  }
+
+  function renderCard() {
+    const card = $("fcg-flip-card");
+    card.classList.toggle("flipped", flipped);
+    if (!filtered.length) {
+      $("fcg-front-text").textContent = "No cards match your filter.";
+      $("fcg-progress-label").textContent = "0/0";
+      $("fcg-progress-label-back").textContent = "0/0";
+      $("fcg-progress-fill").style.width = "0%";
+      $("fcg-progress-fill-back").style.width = "0%";
+      $("fcg-nav-counter").textContent = "Card 0 of 0";
+      return;
+    }
+    const c = filtered[current];
+    const n = current + 1;
+    const pct = (n / filtered.length) * 100;
+    const badge = `Level: ${c.level || "B1"}`;
+    $("fcg-badge").textContent = badge;
+    $("fcg-badge-back").textContent = badge;
+    $("fcg-front-text").innerHTML = hl(c.english_sentence || c.english_gloss);
+    $("fcg-back-german").innerHTML = hl(c.german_sentence || c.german_word);
+    $("fcg-back-gloss").innerHTML = `${hl(c.german_word)} — ${hl(c.english_gloss)}`;
+    $("fcg-progress-label").textContent = `${n}/${filtered.length}`;
+    $("fcg-progress-label-back").textContent = `${n}/${filtered.length}`;
+    $("fcg-progress-fill").style.width = pct + "%";
+    $("fcg-progress-fill-back").style.width = pct + "%";
+    $("fcg-nav-counter").textContent = `Card ${n} of ${filtered.length}`;
+  }
+
+  function flipCard(speak) {
+    if (!filtered.length) return;
+    flipped = !flipped;
+    renderCard();
+    if (flipped && speak !== false) speakGerman(filtered[current].german_sentence || filtered[current].german_word);
+  }
+
+  function renderTable(items) {
+    const body = $("fcg-table-body");
+    if (!items.length) {
+      body.innerHTML = '<tr><td colspan="4" style="text-align:center;font-weight:700;padding:15px">No cards yet.</td></tr>';
+      return;
+    }
+    body.innerHTML = items.map(c => `
+      <tr><td><strong>${strip(c.german_word)}</strong></td><td>${strip(c.english_gloss)}</td>
+      <td>${c.level || ""}</td><td><strong>Box ${getBox(c)}</strong></td></tr>`).join("");
+  }
+
+  function shuffle() {
+    for (let i = filtered.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [filtered[i], filtered[j]] = [filtered[j], filtered[i]];
+    }
+    current = 0; flipped = false; renderCard();
+  }
+
+  function markKnown() {
+    if (!filtered.length) return;
+    const c = filtered[current];
+    setBox(c, getBox(c) + 1);
+    if ($("fcg-hide-mastered").checked && getBox(c) >= 5) {
+      filtered.splice(current, 1);
+      if (current >= filtered.length) current = Math.max(0, filtered.length - 1);
+    } else if (current < filtered.length - 1) current++;
+    else current = 0;
+    flipped = false;
+    applyFilters();
+  }
+
+  function resetProgress() {
+    if (!filtered.length) return;
+    setBox(filtered[current], 1);
+    flipped = false;
+    applyFilters();
+  }
+
+  function showPanel(mode) {
+    $("fcg-study-btn").classList.toggle("active", mode === "study");
+    $("fcg-all-btn").classList.toggle("active", mode === "all");
+    $("fcg-study-panel").classList.toggle("fcg-hidden", mode !== "study");
+    $("fcg-all-panel").classList.toggle("fcg-hidden", mode !== "all");
+    if (mode === "all") renderTable(allCards);
+  }
+
+  function init() {
+    if (!allCards.length) {
+      $("fcg-empty").classList.remove("fcg-hidden");
+      $("fcg-study-panel").classList.add("fcg-hidden");
+      return;
+    }
+    $("fcg-empty").classList.add("fcg-hidden");
+    $("fcg-study-panel").classList.remove("fcg-hidden");
+    populateCategories();
+    applyFilters();
+
+    $("fcg-study-btn").onclick = () => showPanel("study");
+    $("fcg-all-btn").onclick = () => showPanel("all");
+    $("fcg-category").onchange = applyFilters;
+    $("fcg-hide-mastered").onchange = applyFilters;
+    $("fcg-shuffle").onclick = shuffle;
+    $("fcg-flip-card").onclick = (e) => { if (e.target.closest("#fcg-speak-btn")) return; flipCard(true); };
+    $("fcg-speak-btn").onclick = (e) => { e.stopPropagation(); if (filtered.length) speakGerman(filtered[current].german_sentence || filtered[current].german_word); };
+    $("fcg-prev").onclick = () => { if (current > 0) { current--; flipped = false; renderCard(); } };
+    $("fcg-next").onclick = () => { if (current < filtered.length - 1) { current++; flipped = false; renderCard(); } };
+    $("fcg-know").onclick = markKnown;
+    $("fcg-reset").onclick = resetProgress;
+    $("fcg-search").oninput = (e) => {
+      const q = e.target.value.toLowerCase();
+      renderTable(allCards.filter(c =>
+        strip(c.german_word).toLowerCase().includes(q) ||
+        strip(c.english_gloss).toLowerCase().includes(q) ||
+        strip(c.german_sentence).toLowerCase().includes(q) ||
+        strip(c.english_sentence).toLowerCase().includes(q)
+      ));
+    };
+
+    document.addEventListener("keydown", (e) => {
+      if (["INPUT","SELECT","TEXTAREA"].includes(document.activeElement.tagName)) return;
+      if (e.code === "Space") { e.preventDefault(); flipCard(true); }
+      else if (e.code === "ArrowRight") { e.preventDefault(); $("fcg-next").click(); }
+      else if (e.code === "ArrowLeft") { e.preventDefault(); $("fcg-prev").click(); }
+      else if ((e.code === "Enter" || e.code === "Digit2") && flipped) { e.preventDefault(); markKnown(); }
+      else if (e.code === "Digit1" && flipped) { e.preventDefault(); resetProgress(); }
+    });
+  }
+  init();
+})();
+</script>
+</div>
