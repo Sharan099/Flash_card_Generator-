@@ -1,54 +1,70 @@
-name: Deploy to Hugging Face Space
+name: Deploy to Hugging Face
 
 on:
-  workflow_run:
-    workflows: [CI]
-    types: [completed]
-    branches: [main]
+  push:
+    branches:
+      - main
 
 jobs:
   deploy:
-    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' }}
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.workflow_run.head_sha }}
 
-      - name: Push to Hugging Face Space
+    steps:
+      - name: Checkout GitHub repository
+        uses: actions/checkout@v4
+
+      - name: Validate Hugging Face configuration
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           HF_SPACE_REPO: ${{ vars.HF_SPACE_REPO }}
         run: |
           if [ -z "$HF_TOKEN" ]; then
-            echo "HF_TOKEN secret is not configured."
+            echo "HF_TOKEN is not configured"
             exit 1
           fi
+
           if [ -z "$HF_SPACE_REPO" ]; then
-            echo "HF_SPACE_REPO variable is not configured."
+            echo "HF_SPACE_REPO is not configured"
             exit 1
           fi
 
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "GitHub Actions"
+      - name: Clone Hugging Face Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_SPACE_REPO: ${{ vars.HF_SPACE_REPO }}
+        run: |
+          git clone \
+            https://oauth2:${HF_TOKEN}@huggingface.co/spaces/${HF_SPACE_REPO} \
+            hf-space
 
-          git clone "https://user:${HF_TOKEN}@huggingface.co/spaces/${HF_SPACE_REPO}" hf-space
-
+      - name: Sync application
+        run: |
           rsync -av --delete \
-            --exclude .git \
-            --exclude .github \
-            --exclude .venv \
-            --exclude data \
-            --exclude .env \
-            --exclude __pycache__ \
+            --exclude '.git/' \
+            --exclude '.github/' \
+            --exclude '.gitattributes' \
+            --exclude 'hf-space/' \
+            --exclude '.env' \
+            --exclude '.venv/' \
+            --exclude 'venv/' \
+            --exclude '__pycache__/' \
+            --exclude '.pytest_cache/' \
+            --exclude 'Dockerfile' \
+            --exclude '.dockerignore' \
             ./ hf-space/
 
-          cd hf-space
+      - name: Push to Hugging Face
+        working-directory: hf-space
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
           git add .
-          if git diff --staged --quiet; then
-            echo "No changes to deploy."
+
+          if git diff --cached --quiet; then
+            echo "No changes to deploy"
             exit 0
           fi
-          git commit -m "Deploy from GitHub Actions (${{ github.event.workflow_run.head_sha }})"
+
+          git commit -m "Deploy from GitHub ${GITHUB_SHA}"
           git push
