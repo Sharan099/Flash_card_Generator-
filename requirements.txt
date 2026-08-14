@@ -5,3 +5,4 @@ firecrawl-anydoc
 pymupdf
 openai
 python-dotenv
+gradio

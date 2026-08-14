@@ -12,7 +12,9 @@ TEST_DB = os.path.join(tempfile.gettempdir(), "lingo_test.db")
 if os.path.exists(TEST_DB):
     os.remove(TEST_DB)
 
-import app as app_module
+from services import pdf_service
+
+import server as app_module
 
 app_module.DB_PATH = TEST_DB
 app_module.init_db()
@@ -114,7 +116,7 @@ def test_doc_filter():
 
 
 def test_format_helpers():
-    cards = app_module.parse_vocabulary_text(
+    cards = pdf_service.parse_vocabulary_text(
         "German Word\nType\nEnglish\nPartizip II\nGerman Sentence\nEnglish Sentence\n\n"
         "die Abteilung, -en\nnoun\ndepartment\n—\nUnsere Abteilung ist groß.\nOur department is big.",
         "B2",

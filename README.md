@@ -3,8 +3,8 @@ title: Flash Card Generator
 emoji: 📚
 colorFrom: blue
 colorTo: indigo
-sdk: docker
-app_port: 7860
+sdk: gradio
+app_file: app.py
 pinned: false
 ---
 
@@ -39,18 +39,31 @@ A local, single-user German vocabulary trainer that converts PDF to Markdown, ex
 
 ## Run
 
-### Local development
+### Hugging Face Space (Gradio)
 
-Start the FastAPI application server:
+The Space entry point is `app.py`. Run locally:
+
 ```bash
-uvicorn app:app --reload --port 8000
+pip install -r requirements.txt
+python app.py
+```
+
+Open the URL printed in the terminal (default `http://127.0.0.1:7860`).
+
+### Local development (FastAPI + study UI)
+
+Start the full FastAPI application with deck management and spaced repetition:
+
+```bash
+uvicorn server:app --reload --port 8000
 ```
 
 Open your browser at `http://localhost:8000`.
 
-### Docker (local or Hugging Face Spaces)
+### Docker (optional — local or Cloud Run)
 
-Build and run on port `7860`:
+Docker is **not** required for the Hugging Face Gradio Space. It remains available for local container testing or other deployments:
+
 ```bash
 docker build -t flash-card-generator .
 docker run --rm -p 7860:7860 --env-file .env flash-card-generator

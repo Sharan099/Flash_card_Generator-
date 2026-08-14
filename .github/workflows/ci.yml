@@ -21,6 +21,12 @@ jobs:
       - name: Install dependencies
         run: pip install --no-cache-dir -r requirements.txt
 
+      - name: Import Gradio entry point
+        run: python -c "import app; print('app.py imports OK')"
+
+      - name: Import FastAPI server
+        run: python -c "import server; print('server.py imports OK')"
+
       - name: Run tests
         run: python test_api.py
 
